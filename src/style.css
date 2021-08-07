@@ -1,4 +1,58 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
 #content {
-    border: 2px solid black;
     display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+#banner {
+    background-color: grey;
+    height: 10%;
+    width: 100%;
+    text-align: center;
+    border: 2px solid black;
+    box-sizing: border-box;
+}
+#mainPage {
+    display: flex;
+    flex-direction: row;
+}
+#projectList {
+    max-width: 20%;
+    min-width: 200px;
+    border: 2px solid black;
+    box-sizing: border-box;
+    text-align: center;
+    background-color: lightblue;
+    
+}
+#projectList ul {
+    list-style-type: none;
+    padding: 0;
+
+}
+#toDoList {
+    min-width: 80%;
+    border: 2px solid black;
+    box-sizing: border-box;
+    text-align: center;
+}
+#toDoList table {
+    border: 1px solid black;
+    table-layout: fixed;
+    width: 200px;
+}
+#toDoList th {
+    border: 1px solid black;
+    width: 100px;
+    overflow: hidden;
+}
+#toDoList th:nth-child(1) {
+    border: 1px solid black;
+    width: 500px;
+    overflow: hidden;
 }
