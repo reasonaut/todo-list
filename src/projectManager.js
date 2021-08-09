@@ -3,12 +3,13 @@ import { pageBuild } from "./index";
 
 const projectManager = (function() {
     let projects = {};
+    let currentProject = '';
     PubSub.subscribe('addProject', addProject);
     PubSub.subscribe('projectSelect', projectSelect)
 
     function newProject(projectName) {
         let project = {};
-        project.todos = [];
+        project.toDos = [];
         project.name = projectName;
         return project;
     }
@@ -27,7 +28,10 @@ const projectManager = (function() {
     function projectSelect(projectName) {
         
     }
-    return { projects, addProject, newProject }
+    function addToDoToProject(toDo) {
+        projects[currentProject].todos.push(toDo);        
+    }
+    return { projects, currentProject, addProject, newProject }
 })();
 
 export { projectManager };

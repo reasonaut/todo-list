@@ -20,6 +20,7 @@ html, body {
 #mainPage {
     display: flex;
     flex-direction: row;
+    height: 90%;
 }
 #projectList {
     max-width: 20%;
@@ -28,6 +29,7 @@ html, body {
     box-sizing: border-box;
     text-align: center;
     background-color: lightblue;
+    display: inline;
     
 }
 #projectList ul {
@@ -40,19 +42,25 @@ html, body {
     border: 2px solid black;
     box-sizing: border-box;
     text-align: center;
+    display: inline-flexbox;
 }
 #toDoList table {
     border: 1px solid black;
     table-layout: fixed;
-    width: 200px;
+    width: 99%;    
 }
 #toDoList th {
     border: 1px solid black;
-    width: 100px;
+    width: 140px;
     overflow: hidden;
 }
 #toDoList th:nth-child(1) {
     border: 1px solid black;
-    width: 500px;
+    width: 400px;
     overflow: hidden;
+}
+#toDoList button {
+    float: left;
+    margin-left: 4px;
+    margin-top: 4px;
 }
