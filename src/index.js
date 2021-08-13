@@ -40,24 +40,34 @@ const pageBuild = (function(){
     // create table headers
     const toDoListHeader = document.createElement('tr');
     document.querySelector('#toDoList table').appendChild(toDoListHeader);
-    const toDoNameColumn = document.createElement('th');
-    toDoNameColumn.id = 'toDoColumn';
-    toDoNameColumn.innerText = 'ToDo';
+    const isCompleteColumn = document.createElement('th');
+    isCompleteColumn.innerText = 'Status';
+    const toDoDescriptionColumn = document.createElement('th');
+    toDoDescriptionColumn.id = 'toDoColumn';
+    toDoDescriptionColumn.innerText = 'ToDo';
     const toDoPriorityColumn = document.createElement('th');
     toDoPriorityColumn.innerText = 'Priority';
     const toDoDueDateColumn = document.createElement('th');
     toDoDueDateColumn.innerText = 'Due Date';
-    toDoListHeader.appendChild(toDoNameColumn);
+    toDoListHeader.appendChild(isCompleteColumn);
+    toDoListHeader.appendChild(toDoDescriptionColumn);
     toDoListHeader.appendChild(toDoPriorityColumn);
     toDoListHeader.appendChild(toDoDueDateColumn);
     // create toDo input fields
     const toDoListInput = document.createElement('tr');
     document.querySelector('#toDoList table').appendChild(toDoListInput);
-    // toDo name
-    const toDoNameInput = document.createElement('td');
-    toDoNameInput.id = 'toDoNameInput';
-    toDoNameInput.appendChild(document.createElement('input'));
-    toDoListInput.appendChild(toDoNameInput);
+    // toDo status
+    const toDostatusInput = document.createElement('td');
+    toDostatusInput.id = 'toDoStatusInput';
+    const toDoStatusInputCheckbox = document.createElement('input');
+    toDoStatusInputCheckbox.type = 'checkbox';
+    toDostatusInput.appendChild(toDoStatusInputCheckbox);
+    toDoListInput.appendChild(toDostatusInput);
+    // toDo description
+    const toDoDescriptionInput = document.createElement('td');
+    toDoDescriptionInput.id = 'toDoNameInput';
+    toDoDescriptionInput.appendChild(document.createElement('input'));
+    toDoListInput.appendChild(toDoDescriptionInput);
     document.querySelector('#toDoNameInput input').setAttribute('size', '45');
     // toDo priority
     const toDoPriorityInput = document.createElement('td');
@@ -90,8 +100,6 @@ const pageBuild = (function(){
     toDoDatePicker.name = 'to-do-date-picker';
     toDoDueDateInput.appendChild(toDoDatePicker);
     toDoListInput.appendChild(toDoDueDateInput);
-
-
     // add toDo button
     const addToDoButton = document.createElement('button');
     addToDoButton.innerText = 'Add ToDo';
@@ -99,34 +107,94 @@ const pageBuild = (function(){
     addToDoButton.addEventListener('click', function(eventData){
         PubSub.publish('addToDo', eventData);        
     });
+    // check local storage for saved state and read in data
+    const storedProjects = JSON.parse(localStorage.getItem('projectData'));
+    if (storedProjects) {
+        projectManager.projects = storedProjects;
+        console.log(projectManager.projects);
+        // populate project listing
+        for (let project in projectManager.projects) {
+            if (!projectManager.projects.hasOwnProperty(project)) continue;
+            
+            addProject(project);
+        }
+        
+    }
+
+
     function getToDoFormData() {
+        const isComplete = document.querySelector('#toDoStatusInput input').checked;
         const description = document.querySelector('#toDoNameInput input').value;
         const priority = document.querySelector('#toDoPriorityInput select').value;
         const dueDate = document.querySelector('#toDoDueDateInput input').value;
-        return { description, priority, dueDate };
+        return { isComplete, description, priority, dueDate };
+    }
+    function clearToDoFormData() {
+        document.querySelector('#toDoNameInput input').value = '';
+        document.querySelector('#toDoPriorityInput select').value = '';
+        document.querySelector('#toDoDueDateInput input').value = '';
     }
     
 
-    function addProject(projectName) {
+    function addProject(project) {
         const newProjectLi = document.createElement('li');
         const newProjectButton = document.createElement('button');
-        newProjectButton.innerText = projectName;
+        newProjectButton.innerText = project;
         newProjectButton.addEventListener('click', function(eventData) {
             PubSub.publish('projectSelect', eventData);
         })
         document.querySelector('#projectList ul').appendChild(newProjectLi);
         newProjectLi.appendChild(newProjectButton);
-        projectManager.currentProject = projectName;
+        projectManager.currentProject = project;
         // list new project as selected project in banner
-        selectedProject.innerText = projectName;
-        // clear previous projects todos
-        // document.querySelector('tr .toDoItem').remove();
-
+        selectedProject.innerText = project;
+        // clear previous projects toDos
+        clearToDos();
     }
-    function displayProjectToDos(todos) {
+    function clearToDos() {
+        if (document.querySelectorAll('.toDoItem'))
+            document.querySelectorAll('.toDoItem').forEach(toDo => {
+                toDo.remove();
+            });
+    }
+    function displayProjectToDos(currentProject) {
+        clearToDos();
+        selectedProject.innerText = currentProject.name;
+        let i = 0;
+        currentProject.toDos.forEach(toDo => {
+            addToDoToTable(toDo, i);
+            i++;
+        });        
+    }
+    function addToDoToTable(toDo, toDoindex) {
+        const newRow = document.createElement('tr');
+        newRow.classList.add('toDoItem');
+        newRow.setAttribute('data-index', toDoindex);
+        const status = document.createElement('td');
+        const statusInput = document.createElement('input');
+        statusInput.type = 'checkbox';
+        statusInput.addEventListener('change', (eventData) => {
+            PubSub.publish('checkboxStateChange', eventData);
+        })
+        status.appendChild(statusInput);
+        const description = document.createElement('td');
+        const priority = document.createElement('td');
+        const dueDate = document.createElement('td');
         
+
+        statusInput.checked = toDo.isComplete ? true : false;
+        description.innerText = toDo.description;
+        priority.innerText = toDo.priority;
+        dueDate.innerText = toDo.dueDate;
+        newRow.appendChild(status);
+        newRow.appendChild(description);
+        newRow.appendChild(priority);
+        newRow.appendChild(dueDate);
+        document.querySelector('#toDoList table').appendChild(newRow);
+        // clear toDo form
+        clearToDoFormData();
     }
     
-    return { addProject, getToDoFormData };
+    return { addProject, displayProjectToDos, getToDoFormData, addToDoToTable };
 }());
 export { pageBuild };
