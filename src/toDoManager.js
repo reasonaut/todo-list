@@ -4,9 +4,10 @@ import { pageBuild } from "./index.js";
 
 const toDoManager = (function() {
     PubSub.subscribe('addToDo', addToDo);
-    PubSub.subscribe('checkboxStateChange', updateToDoCheckedState) 
+    PubSub.subscribe('checkboxStateChange', updateToDoCheckedState);
+    PubSub.subscribe('toDoRowDblClick', editToDo);
+    
     function newToDo(data) {
-        // if (!projectManager.currentProject) return;
         let toDo = {};
         toDo.description = data.description;
         toDo.priority = data.priority;
@@ -38,10 +39,19 @@ const toDoManager = (function() {
         } else {
             projectManager.projects[currentProject.name].toDos[toDoIndex].isComplete = false;
         }
-        console.log(projectManager.projects);
         // save state
         projectManager.saveAppState(projectManager.projects);
     }
+    function editToDo(eventData) {
+        const index = parseInt(eventData.currentTarget.getAttribute('data-index'));
+        const currentEdit = document.getElementById('saveDeleteInputRow');
+        if (!currentEdit) pageBuild.changeToDoRowEditor(index);
+    }
+    function updateToDo(toDo, index) {
 
-    return { newToDo };
+    }
+
+    return { newToDo, updateToDo };
 }());
+
+export { toDoManager };

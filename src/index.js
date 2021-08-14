@@ -66,7 +66,9 @@ const pageBuild = (function(){
     // toDo description
     const toDoDescriptionInput = document.createElement('td');
     toDoDescriptionInput.id = 'toDoNameInput';
-    toDoDescriptionInput.appendChild(document.createElement('input'));
+    const toDoDescriptionInputTextField = document.createElement('input');
+    toDoDescriptionInputTextField.type = 'text';
+    toDoDescriptionInput.appendChild(toDoDescriptionInputTextField);
     toDoListInput.appendChild(toDoDescriptionInput);
     document.querySelector('#toDoNameInput input').setAttribute('size', '45');
     // toDo priority
@@ -102,8 +104,11 @@ const pageBuild = (function(){
     toDoListInput.appendChild(toDoDueDateInput);
     // add toDo button
     const addToDoButton = document.createElement('button');
+    const addToDoRow = document.createElement('tr');
+    addToDoButton.id = 'addToDoButton';
     addToDoButton.innerText = 'Add ToDo';
-    toDoList.appendChild(addToDoButton);
+    addToDoRow.appendChild(addToDoButton);
+    document.querySelector('#toDoList table').appendChild(addToDoRow);
     addToDoButton.addEventListener('click', function(eventData){
         PubSub.publish('addToDo', eventData);        
     });
@@ -111,16 +116,12 @@ const pageBuild = (function(){
     const storedProjects = JSON.parse(localStorage.getItem('projectData'));
     if (storedProjects) {
         projectManager.projects = storedProjects;
-        console.log(projectManager.projects);
         // populate project listing
         for (let project in projectManager.projects) {
             if (!projectManager.projects.hasOwnProperty(project)) continue;
-            
             addProject(project);
         }
-        
     }
-
 
     function getToDoFormData() {
         const isComplete = document.querySelector('#toDoStatusInput input').checked;
@@ -170,6 +171,9 @@ const pageBuild = (function(){
         const newRow = document.createElement('tr');
         newRow.classList.add('toDoItem');
         newRow.setAttribute('data-index', toDoindex);
+        newRow.addEventListener('dblclick', function(eventData) {
+            PubSub.publish('toDoRowDblClick', eventData);
+        });
         const status = document.createElement('td');
         const statusInput = document.createElement('input');
         statusInput.type = 'checkbox';
@@ -194,7 +198,75 @@ const pageBuild = (function(){
         // clear toDo form
         clearToDoFormData();
     }
+    function changeToDoRowEditor(toDoIndex){
+        const toDoRow = document.querySelector(`[data-index='${toDoIndex}'`);
+        toDoRow.style.backgroundColor = 'white';
+        // clone data inputs and make row data data editable
+        const toDoStatusEdit = toDostatusInput.cloneNode(true);
+        toDoStatusEdit.id = 'toDoStatusEdit';
+        toDoStatusEdit.querySelector('input[type="checkbox"]').checked = toDoRow.querySelector('input[type="checkbox"]').checked;
+        const toDoDescriptionEdit = toDoDescriptionInput.cloneNode(true);
+        toDoDescriptionEdit.id = 'toDoDescriptionEdit';
+        toDoDescriptionEdit.querySelector('input[type="text"]').value = toDoRow.querySelector('td:nth-child(2)').innerText;
+        const toDoPriorityEdit = toDoPriorityInput.cloneNode(true);
+        toDoPriorityEdit.id = 'toDoPriorityEdit';
+        toDoPriorityEdit.querySelector('select').value = toDoRow.querySelector('td:nth-child(3)').innerText;
+        const toDoDueDateEdit = toDoDueDateInput.cloneNode(true);
+        toDoDueDateEdit.id = 'toDoDueDateEdit';
+        toDoDueDateEdit.querySelector('input[type="date"]').value = toDoRow.querySelector('td:nth-child(4)').innerText;
+        const editableToDoRow = document.createElement('tr');
+        editableToDoRow.appendChild(toDoStatusEdit);
+        editableToDoRow.appendChild(toDoDescriptionEdit);
+        editableToDoRow.appendChild(toDoPriorityEdit);
+        editableToDoRow.appendChild(toDoDueDateEdit);
+        // insert row for save/delete controls
+        const saveDeleteInputRow = document.createElement('tr');
+        saveDeleteInputRow.id = 'saveDeleteInputRow';
+        const saveToDoButton = document.createElement('button');
+        saveToDoButton.innerText = 'Save';
+        const saveTd = document.createElement('td');
+        saveTd.appendChild(saveToDoButton);
+        const deleteToDoButton = document.createElement('button');
+        deleteToDoButton.innerText = 'Delete';
+        const delTd = document.createElement('td');
+        delTd.appendChild(deleteToDoButton);
+        saveDeleteInputRow.appendChild(saveTd);
+        saveDeleteInputRow.appendChild(delTd);
+        toDoRow.insertAdjacentElement('afterend', saveDeleteInputRow);
+        saveToDoButton.addEventListener('click', () => {
+            const updatedToDoRow = document.createElement('tr');
+            updatedToDoRow.classList.add('toDoItem');
+            updatedToDoRow.setAttribute('data-index', toDoIndex);
+            updatedToDoRow.addEventListener('dblclick', function(eventData) {
+                PubSub.publish('toDoRowDblClick', eventData);
+            });
+            const updatedStatus =  toDoStatusEdit.cloneNode(true);
+            const updatedDescription = document.createElement('td');
+            updatedDescription.innerText = editableToDoRow.querySelector('td:nth-child(2) input').value;
+            const updatedPriority = document.createElement('td');
+            updatedPriority.innerText = editableToDoRow.querySelector('td:nth-child(3) select').value;
+            const updatedDueDate = document.createElement('td');
+            updatedDueDate.innerText = editableToDoRow.querySelector('td:nth-child(4) input').value;
+            updatedToDoRow.appendChild(updatedStatus);
+            updatedToDoRow.appendChild(updatedDescription);
+            updatedToDoRow.appendChild(updatedPriority);
+            updatedToDoRow.appendChild(updatedDueDate);
+            let revisedToDo = {};
+            revisedToDo.isComplete = updatedStatus.querySelector('input').checked;
+            revisedToDo.description = updatedDescription.value;
+            revisedToDo.priority = updatedPriority.value;
+            revisedToDo.dueDate = updatedDueDate.value;
+            toDoManager.updateToDo(revisedToDo, toDoIndex);
+            document.querySelector('#toDoList table').replaceChild(updatedToDoRow, editableToDoRow);
+            saveDeleteInputRow.remove();
+        });
+        deleteToDoButton.addEventListener('click', () => {
+            
+        });
+        // replace data row with editable row
+        document.querySelector('#toDoList table').replaceChild(editableToDoRow, toDoRow);        
+    }
     
-    return { addProject, displayProjectToDos, getToDoFormData, addToDoToTable };
+    return { addProject, displayProjectToDos, getToDoFormData, addToDoToTable, changeToDoRowEditor };
 }());
 export { pageBuild };

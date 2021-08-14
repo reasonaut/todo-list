@@ -37,7 +37,6 @@ const projectManager = (function() {
         currentProject = eventData.target.innerText;
         currentProject = projects[currentProject];
         pageBuild.displayProjectToDos(currentProject);
-        console.log(currentProject);
     }
     function saveAppState(projectsState) {
         projects = projectsState;

@@ -65,7 +65,7 @@ html, body {
     width: 400px;
     overflow: hidden;
 }
-#toDoList button {
+#addToDoButton {
     float: left;
     margin-left: 4px;
     margin-top: 4px;
