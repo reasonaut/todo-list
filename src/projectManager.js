@@ -24,7 +24,7 @@ const projectManager = (function() {
     }
     function addProject() {
         const projectName = prompt('Project name?');
-        if (projects[projectName] || projectName === '') {
+        if (!projects[projectName] || projectName === '') {
             alert('cannot have duplicate or empty project name');
             return;
         }

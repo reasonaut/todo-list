@@ -253,15 +253,17 @@ const pageBuild = (function(){
             updatedToDoRow.appendChild(updatedDueDate);
             let revisedToDo = {};
             revisedToDo.isComplete = updatedStatus.querySelector('input').checked;
-            revisedToDo.description = updatedDescription.value;
-            revisedToDo.priority = updatedPriority.value;
-            revisedToDo.dueDate = updatedDueDate.value;
+            revisedToDo.description = updatedDescription.innerText;
+            revisedToDo.priority = updatedPriority.innerText;
+            revisedToDo.dueDate = updatedDueDate.innerText;
             toDoManager.updateToDo(revisedToDo, toDoIndex);
             document.querySelector('#toDoList table').replaceChild(updatedToDoRow, editableToDoRow);
             saveDeleteInputRow.remove();
         });
         deleteToDoButton.addEventListener('click', () => {
-            
+            editableToDoRow.remove();
+            saveDeleteInputRow.remove();
+            toDoManager.removeToDo(toDoIndex);
         });
         // replace data row with editable row
         document.querySelector('#toDoList table').replaceChild(editableToDoRow, toDoRow);        

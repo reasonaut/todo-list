@@ -48,10 +48,15 @@ const toDoManager = (function() {
         if (!currentEdit) pageBuild.changeToDoRowEditor(index);
     }
     function updateToDo(toDo, index) {
-
+        projectManager.projects[projectManager.getCurrentProject().name].toDos.splice(index, 1, toDo);
+        projectManager.saveAppState(projectManager.projects);
+    }
+    function removeToDo(index) {
+        projectManager.projects[projectManager.getCurrentProject().name].toDos.splice(index, 1);
+        projectManager.saveAppState(projectManager.projects);
     }
 
-    return { newToDo, updateToDo };
+    return { newToDo, updateToDo, removeToDo };
 }());
 
 export { toDoManager };
